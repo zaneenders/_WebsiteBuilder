@@ -19,7 +19,7 @@ struct GenerateSetupScript: CommandPlugin {
             }
             executableProducts.append(ep)
         }
-        guard executableProducts.count != 1 else {
+        guard executableProducts.count == 1 else {
             print(
                 "Dockerfile generation for multiple executable Products not supported"
             )

@@ -11,6 +11,7 @@ let package = Package(
         .watchOS(.v8),
     ],
     products: [
+        .executable(name: "sample-website", targets: ["SampleWebsite"]),
         .library(name: "WebServer", targets: ["WebServer"]),
         .library(name: "HTMLBuilder", targets: ["HTMLBuilder"]),
         .plugin(
