@@ -1,6 +1,6 @@
 public struct Head: CustomStringConvertible {
     let sendJS: Bool
-    let title = "Document"
+    let title: String
     let jsString = """
         <script src="/script.js" type="text/javascript" charset="utf-8"></script>
         """
@@ -14,7 +14,8 @@ public struct Head: CustomStringConvertible {
         """
     }
 
-    public init(js: Bool = false) {
+    public init(title: String, js: Bool = false) {
+        self.title = title
         self.sendJS = js
     }
 }
