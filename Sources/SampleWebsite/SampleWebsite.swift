@@ -7,7 +7,7 @@ struct SampleWebsite: WebsiteProtocol {
     var pages: [Page] {
         Page(
             "index",
-            HTML(Head(js: false)) {
+            HTML(Head(title: "Zane was here", js: false)) {
                 Body {
                     Heading(.one, "Zane was here")
                         .style(background: .yellow)

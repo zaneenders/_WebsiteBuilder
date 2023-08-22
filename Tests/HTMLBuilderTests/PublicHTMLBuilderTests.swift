@@ -16,7 +16,7 @@ final class PublicHTMLBuilderTests: XCTestCase {
             Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit
             """
 
-        let page = HTML(Head(js: false)) {
+        let page = HTML(Head(title: "Hello World", js: false)) {
             Body {
                 Paragraph("hello")
                 Paragraph("world")
