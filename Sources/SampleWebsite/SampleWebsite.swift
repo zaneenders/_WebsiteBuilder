@@ -16,6 +16,7 @@ struct SampleWebsite: WebsiteProtocol {
                     Paragraph("I don't like the color red")
                         .style(foreground: .hex("ffffff"))
                         .style(background: .red)
+                    Paragraph("Math here \(Latex("e^{i\\pi} + 1 = 0"))")
                 }
             }
         )

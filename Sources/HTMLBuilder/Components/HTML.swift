@@ -6,10 +6,25 @@ public struct HTML: CustomStringConvertible {
         html()
     }
 
-    private func html() -> String {
+    private func html(_ js: Bool = true) -> String {
         return """
             <!DOCTYPE html>
             <html lang="en">
+            \(js ? """
+            <script>console.log("Javascript sucks - Zane")</script>
+            <script>
+                MathJax = {
+                    tex: {
+                        inlineMath: [['$', '$'], ['\\(', '\\)']]
+                    },
+                    svg: {
+                        fontCache: 'global'
+                    }
+                }
+            </script>
+            <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+            </script>
+            """ : "")
             \(head.description)
             \(bodyString())
             </html>
