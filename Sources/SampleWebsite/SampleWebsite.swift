@@ -1,13 +1,16 @@
 import HTMLBuilder
 import WebServer
 
+let log =
+    "<script type=\"text/javascript\" charset=\"utf-8\">console.log(\"hello from type hole\")</script>"
+
 @main
 struct SampleWebsite: WebsiteProtocol {
     var name: String = "sample-website"
     var pages: [Page] {
         Page(
             "index",
-            HTML(Head(title: "Zane was here", js: false)) {
+            HTML(Head(title: "Zane was here", js: false).rawJSString(log)) {
                 Body {
                     Heading(.one, "Zane was here")
                         .style(background: .yellow)
@@ -17,6 +20,9 @@ struct SampleWebsite: WebsiteProtocol {
                         .style(foreground: .hex("ffffff"))
                         .style(background: .red)
                     Paragraph("Math here \(Latex("e^{i\\pi} + 1 = 0"))")
+                    RawHTML(
+                        "<details><summary>Summary Here</summary>Other Here</details>"
+                    )
                 }
             }
         )
