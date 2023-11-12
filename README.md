@@ -136,6 +136,7 @@ struct ExampleWebsite: WebsiteProtocol {
                     Paragraph("I don't like the color red")
                         .style(foreground: .hex("ffffff"))
                         .style(background: .red)
+                    Paragraph("Math here \(Latex("e^{i\\pi} + 1 = 0"))")
                 }
             }
         )
@@ -208,3 +209,10 @@ swift package --allow-writing-to-package-directory generate-dockerfile
 This will generate a `Dockerfile` appropriate for what ever you named your executable target the.
 
 From here the steps are pretty easy. Follow the [fly.io](https://fly.io/docs/apps/launch/) instructions and you are off to the races using `fly launch` or `fly deploy` for proceeding updates.
+
+
+## Next steps 
+
+- [ ] Integrate Swift NIO
+- [ ] Add more types to the language so websites don't look so primitive
+- [ ] Add some sort of @State to the DSL and use websockets to update the dom to reflect the mutations
