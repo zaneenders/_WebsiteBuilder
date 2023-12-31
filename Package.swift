@@ -3,11 +3,11 @@
 import PackageDescription
 
 let package = Package(
-    name: "_WebsiteBuilder",
+    name: "_WebsiteBuilder", // TODO better name
     products: [
         .library(
             name: "_WebsiteBuilder",
-            targets: ["_WebsiteBuilder", "Colors"])
+            targets: ["WebsiteBuilder", "Colors"])
     ],
     dependencies: [
         .package(
@@ -17,7 +17,7 @@ let package = Package(
     targets: [
         .target(name: "Colors"),
         .target(
-            name: "_WebsiteBuilder",
+            name: "WebsiteBuilder",
             dependencies: [
                 .product(name: "NIOCore", package: "swift-nio"),
                 .product(name: "NIOPosix", package: "swift-nio"),
