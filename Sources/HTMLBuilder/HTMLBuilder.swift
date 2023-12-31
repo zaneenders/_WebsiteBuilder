@@ -1,2 +1,0 @@
-@resultBuilder
-public enum HTMLBuilder {}

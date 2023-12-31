@@ -1,60 +1,43 @@
-// swift-tools-version: 5.8
+// swift-tools-version: 5.9
+
 import PackageDescription
 
 let package = Package(
     name: "_WebsiteBuilder",
-    platforms: [
-        // MacOS Requirements for Concurrency
-        .macOS(.v13),
-        .iOS(.v16),
-        .tvOS(.v16),
-        .watchOS(.v8),
-    ],
     products: [
-        .executable(name: "sample-website", targets: ["SampleWebsite"]),
-        .library(name: "WebServer", targets: ["WebServer"]),
-        .library(name: "HTMLBuilder", targets: ["HTMLBuilder"]),
-        .plugin(
-            name: "GenerateDockerfile",
-            targets: ["GenerateDockerfile"]
-        ),
+        .library(
+            name: "_WebsiteBuilder",
+            targets: ["_WebsiteBuilder", "Colors"])
     ],
     dependencies: [
         .package(
-            url: "https://github.com/apple/swift-crypto.git", "1.0.0"..<"3.0.0")
+            url: "https://github.com/apple/swift-nio.git",
+            from: "2.0.0")
     ],
     targets: [
-        .executableTarget(
-            name: "SampleWebsite",
-            dependencies: ["WebServer", "HTMLBuilder"]),
+        .target(name: "Colors"),
         .target(
-            name: "WebServer",
+            name: "_WebsiteBuilder",
             dependencies: [
-                "HTMLBuilder",
-                "CHelpers",
-                .product(name: "Crypto", package: "swift-crypto"),
-            ]),
-        // Target for wrapping C code
-        .target(name: "CHelpers", publicHeadersPath: "include"),
-        // HTML Builder
-        .target(name: "HTMLBuilder"),
-        // Testing
-        .testTarget(
-            name: "HTMLBuilderTests",
-            dependencies: ["HTMLBuilder"]),
-
-        // Plugins
-        .plugin(
-            name: "GenerateDockerfile",
-            capability: .command(
-                intent: .custom(
-                    verb: "generate-dockerfile",
-                    description: "Generates Dockerfile"),
-                permissions: [
-                    .writeToPackageDirectory(
-                        reason: "This command generates Dockerfile")
-                ]
-            )
+                .product(name: "NIOCore", package: "swift-nio"),
+                .product(name: "NIOPosix", package: "swift-nio"),
+                .product(name: "NIOHTTP1", package: "swift-nio"),
+            ]
+            /*
+            // Swift 6 settings for local developement
+            ,swiftSettings: [
+                .enableUpcomingFeature("BareSlashRegexLiterals"),
+                .enableUpcomingFeature("ConciseMagicFile"),
+                .enableUpcomingFeature("ExistentialAny"),
+                .enableUpcomingFeature("ForwardTrailingClosures"),
+                .enableUpcomingFeature("ImplicitOpenExistentials"),
+                .enableUpcomingFeature("StrictConcurrency"),
+                .unsafeFlags([
+                    "-warn-concurrency", "-enable-actor-data-race-checks",
+                ]),
+            ]
+            */
         ),
+
     ]
 )
