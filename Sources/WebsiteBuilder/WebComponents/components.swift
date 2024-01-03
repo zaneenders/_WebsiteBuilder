@@ -119,7 +119,8 @@ public func div(@DivBuilder components: () -> String) -> HTMLString {
     components()
 }
 
-public func paragraphs(@ParagraphBuilder components: () -> String) -> HTMLString
+public func paragraphs(@ParagraphBuilder _ components: () -> String)
+    -> HTMLString
 {
     components()
 }
@@ -178,7 +179,10 @@ public enum ParagraphBuilder {
     {
         var output = ""
         for p in components {
-            output += pTag(p.contents)
+            let subP = p.contents.split(separator: "\n\n")
+            for sp in subP {
+                output += pTag(String(sp))
+            }
         }
         return output
     }

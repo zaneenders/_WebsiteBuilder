@@ -3,7 +3,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "_WebsiteBuilder", // TODO better name
+    name: "_WebsiteBuilder",  // TODO better name
     products: [
         .library(
             name: "_WebsiteBuilder",
