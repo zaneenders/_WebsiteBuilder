@@ -7,7 +7,11 @@ let package = Package(
     products: [
         .library(
             name: "_WebsiteBuilder",
-            targets: ["WebsiteBuilder", "Colors"])
+            targets: ["WebsiteBuilder", "Colors"]),
+        .plugin(
+            name: "generate-dockerfile",
+            targets: ["GenerateDockerfile"]
+        ),
     ],
     dependencies: [
         .package(
@@ -38,6 +42,18 @@ let package = Package(
             ]
             */
         ),
-
+        // Plugins
+        .plugin(
+            name: "GenerateDockerfile",
+            capability: .command(
+                intent: .custom(
+                    verb: "generate-dockerfile",
+                    description: "Generates Dockerfile"),
+                permissions: [
+                    .writeToPackageDirectory(
+                        reason: "This command generates Dockerfile")
+                ]
+            )
+        ),
     ]
 )
