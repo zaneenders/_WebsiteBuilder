@@ -42,6 +42,8 @@ let package = Package(
             ]
             */
         ),
+        .testTarget(name: "PlayGroundTests", dependencies: ["WebsiteBuilder"]),
+
         // Plugins
         .plugin(
             name: "GenerateDockerfile",
