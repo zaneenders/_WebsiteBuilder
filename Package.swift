@@ -27,10 +27,10 @@ let package = Package(
                 .product(name: "NIOPosix", package: "swift-nio"),
                 .product(name: "NIOHTTP1", package: "swift-nio"),
                 .product(name: "NIOWebSocket", package: "swift-nio"),
-            ]
-            /*
+            ]// /*
             // Swift 6 settings for local developement
-            ,swiftSettings: [
+            ,
+            swiftSettings: [
                 .enableUpcomingFeature("BareSlashRegexLiterals"),
                 .enableUpcomingFeature("ConciseMagicFile"),
                 .enableUpcomingFeature("ExistentialAny"),
@@ -41,7 +41,7 @@ let package = Package(
                     "-warn-concurrency", "-enable-actor-data-race-checks",
                 ]),
             ]
-            */
+            // */
         ),
         .testTarget(name: "PlayGroundTests", dependencies: ["WebsiteBuilder"]),
 

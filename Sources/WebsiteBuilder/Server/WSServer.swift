@@ -46,6 +46,8 @@ struct WSServer {
         """
         wsconnection.onmessage = function (msg) {
             console.log(msg.data)
+            let btn = document.querySelector(".button")
+            btn.innerHTML = msg.data
         }
         """
     }
@@ -53,8 +55,7 @@ struct WSServer {
     private var btnHandler: String {
         """
         btn.addEventListener(`click`, function (e) {
-            console.log("click")
-            wsconnection.send(`Hello\n`)
+            wsconnection.send(`Hello`)
         })
         """
     }
@@ -261,11 +262,17 @@ struct WSServer {
                             break
                         case .text:
                             // Well this is the returning data frame.
-                            let str = frame.unmaskedData.getString(
+                            let _ = frame.unmaskedData.getString(
                                 at: 0, length: frame.data.readableBytes)
                             let id = "\(channel.channel.remoteAddress!)"
                             let count = await storage.increment(id)
-                            print("inc: \(count) : \(id)")
+                            let rspString = "inc: \(count) : \(id)"
+                            var buffer = channel.channel.allocator.buffer(
+                                capacity: 12)  // rspString size
+                            buffer.writeString(rspString)
+                            let frame = WebSocketFrame(
+                                fin: true, opcode: .text, data: buffer)
+                            try await outbound.write(frame)
                             break  // keep connection alive
                         default:
                             // Unknown frames are errors.
@@ -288,12 +295,12 @@ struct WSServer {
                         buffer.writeString(rspString)
                         let frame = WebSocketFrame(
                             fin: true, opcode: .text, data: buffer)
-                        print(rspString)
                         try await outbound.write(frame)
                         try await Task.sleep(for: .seconds(1))
                     }
                 }
 
+                // What does this do?
                 try await group.next()
                 group.cancelAll()
             }
