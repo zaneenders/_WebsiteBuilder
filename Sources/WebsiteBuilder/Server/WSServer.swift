@@ -67,7 +67,13 @@ extension WSServer {
 
     private var js: String {
         """
-        var wsconnection = new WebSocket("ws://[\(host)]:\(port)/websocket")
+        var scheme = 'ws';
+        var location = document.location;
+
+        if (location.protocol === 'https:') {
+            scheme += 's';
+        }
+        var wsconnection = new WebSocket(`${scheme}://[\(host)]:\(port)/websocket`)
         \(msgHandler) 
         document.addEventListener("DOMContentLoaded", function(event){
             const btn = document.querySelector(".button")
