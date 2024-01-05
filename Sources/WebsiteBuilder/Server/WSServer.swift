@@ -20,11 +20,16 @@ import NIOWebSocket
 actor ServerState {
     var connections: [String: Int] = [:]
 
-    func view(_ id: String) -> Int {
+    func update(_ id: String, _ input: String) -> String {
+        // TODO handle logic from input
+        "Button Count \(increment(id))"
+    }
+
+    func view(_ id: String) -> String {
         if connections[id] == nil {
-            return 0
+            return "Button"
         } else {
-            return connections[id]!
+            return "Button Count \(connections[id]!)"
         }
     }
 
@@ -40,7 +45,7 @@ actor ServerState {
     }
 }
 
-struct WSServer {
+extension WSServer {
 
     private var msgHandler: String {
         """
@@ -78,6 +83,14 @@ struct WSServer {
         """
     }
 
+    private var styles: String {
+        """
+        * {
+            background-color: black;
+            color: white;
+        }
+        """
+    }
     private var websocketResponse: String {
         """
         <!DOCTYPE html>
@@ -85,6 +98,9 @@ struct WSServer {
           <head>
             <meta charset="utf-8">
             <title>Zane Enders</title>
+            <style>
+            \(styles)
+            </style>
             <script>
             \(js)
             </script>
@@ -95,6 +111,9 @@ struct WSServer {
         </html>
         """
     }
+}
+
+struct WSServer {
 
     let storage = ServerState()
 
@@ -225,11 +244,11 @@ struct WSServer {
     private func handleWebsocketChannel(
         _ channel: NIOAsyncChannel<WebSocketFrame, WebSocketFrame>
     ) async throws {
+        let id = "\(channel.channel.remoteAddress!)"
         try await channel.executeThenClose { inbound, outbound in
             try await withThrowingTaskGroup(of: Void.self) { group in
                 group.addTask {
                     for try await frame in inbound {
-                        print(frame.opcode)
                         switch frame.opcode {
                         case .ping:
                             print("Received ping")
@@ -261,15 +280,15 @@ struct WSServer {
                             // We ignore these frames.
                             break
                         case .text:
-                            // Well this is the returning data frame.
-                            let _ = frame.unmaskedData.getString(
+                            let input = frame.unmaskedData.getString(
                                 at: 0, length: frame.data.readableBytes)
-                            let id = "\(channel.channel.remoteAddress!)"
-                            let count = await storage.increment(id)
-                            let rspString = "inc: \(count) : \(id)"
-                            var buffer = channel.channel.allocator.buffer(
-                                capacity: 12)  // rspString size
-                            buffer.writeString(rspString)
+                            guard input != nil else {
+                                print("un able to read input for: \(id)")
+                                return
+                            }
+                            let response = await storage.update(id, input!)
+                            let buffer = channel.channel.allocator.buffer(
+                                string: response)  // rspString size
                             let frame = WebSocketFrame(
                                 fin: true, opcode: .text, data: buffer)
                             try await outbound.write(frame)
@@ -282,17 +301,16 @@ struct WSServer {
                 }
 
                 group.addTask {
+                    // TODO not really sure what to do here but this sorta acts as our heartbeat
+
                     // This is our main business logic where we are just sending the current time
                     // every second.
                     while true {
                         // We can't really check for error here, but it's also not the purpose of the
                         // example so let's not worry about it.
-                        var buffer = channel.channel.allocator.buffer(
-                            capacity: 12)
-                        let id = "\(channel.channel.remoteAddress!)"
-                        let count = await storage.view(id)
-                        let rspString = "view: \(count) : \(id)"
-                        buffer.writeString(rspString)
+                        let response = await storage.view(id)
+                        let buffer = channel.channel.allocator.buffer(
+                            string: response)
                         let frame = WebSocketFrame(
                             fin: true, opcode: .text, data: buffer)
                         try await outbound.write(frame)
@@ -300,7 +318,7 @@ struct WSServer {
                     }
                 }
 
-                // What does this do?
+                // What does .next() do?
                 try await group.next()
                 group.cancelAll()
             }
