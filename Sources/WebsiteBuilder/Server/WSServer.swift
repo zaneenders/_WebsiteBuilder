@@ -245,6 +245,35 @@ struct WSServer {
                     return
                 }
 
+                if head.uri == RobotsTxt.url {
+                    // TODO move headers to RobotsTxt
+                    let contents = RobotsTxt().contents
+                    var headers = HTTPHeaders()
+                    headers.add(name: "Content-Type", value: "text/plain")
+                    headers.add(
+                        name: "Content-Length",
+                        value: String(
+                            ByteBuffer(string: contents)
+                                .readableBytes))
+                    headers.add(name: "Connection", value: "close")
+                    let responseHead = HTTPResponseHead(
+                        version: .init(major: 1, minor: 1),
+                        status: .ok,
+                        headers: headers
+                    )
+                    // change to extension on robots
+                    try await outbound.write(
+                        contentsOf: [
+                            .head(responseHead),
+                            .body(
+                                ByteBuffer(string: contents)
+                            ),
+                            .end(nil),
+                        ]
+                    )
+                    return
+                }
+
                 // GETs only.
                 guard case .GET = head.method else {
                     try await self.respond405(writer: outbound)
