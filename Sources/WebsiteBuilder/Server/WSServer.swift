@@ -17,112 +17,6 @@ import NIOHTTP1
 import NIOPosix
 import NIOWebSocket
 
-actor ServerState {
-    var connections: [String: Int] = [:]
-
-    func update(_ id: String, _ input: String) -> String {
-        // TODO handle logic from input
-        "Button Count \(increment(id))"
-    }
-
-    func view(_ id: String) -> String {
-        if connections[id] == nil {
-            return "Button"
-        } else {
-            return "Button Count \(connections[id]!)"
-        }
-    }
-
-    func increment(_ id: String) -> Int {
-        if connections[id] == nil {
-            connections[id] = 1
-            return 1
-        } else {
-            let r = connections[id]! + 1
-            connections[id] = r
-            return r
-        }
-    }
-}
-
-extension WSServer {
-
-    private var msgHandler: String {
-        """
-        wsconnection.onmessage = function (msg) {
-            console.log(msg.data)
-            let btn = document.querySelector(".button")
-            btn.innerHTML = msg.data
-        }
-        """
-    }
-
-    private var btnHandler: String {
-        """
-        btn.addEventListener(`click`, function (e) {
-            wsconnection.send(`Hello`)
-        })
-        """
-    }
-
-    private var js: String {
-        """
-        \(msgHandler) 
-        document.addEventListener("DOMContentLoaded", function(event){
-            const btn = document.querySelector(".button")
-            \(btnHandler)
-        })
-        """
-    }
-
-    private var body: String {
-        """
-        <h1>WebSocket Stream</h1>
-        <div class="button">Button</div>       
-        """
-    }
-
-    private var styles: String {
-        """
-        * {
-            background-color: black;
-            color: white;
-        }
-        """
-    }
-    private var wsSocket: String {
-        #if DEBUG
-            return
-                "var wsconnection = new WebSocket(`ws://[\(host)]:\(port)/websocket`)"
-        #else
-            return
-                "var wsconnection = new WebSocket(`wss://\(domain)/websocket`)"
-        #endif
-    }
-
-    private var websocketResponse: String {
-        """
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <meta charset="utf-8">
-            <title>Zane Enders</title>
-            <style>
-            \(styles)
-            </style>
-            <script>
-            \(wsSocket)
-            \(js)
-            </script>
-          </head>
-          <body>
-          \(body)
-          </body>
-        </html>
-        """
-    }
-}
-
 struct WSServer {
 
     let storage = ServerState()
@@ -137,9 +31,9 @@ struct WSServer {
         self.eventLoopGroup = eventLoopGroup
     }
 
-    private let domain: String
-    private let host: String
-    private let port: Int
+    let domain: String
+    let host: String
+    let port: Int
     private let eventLoopGroup: MultiThreadedEventLoopGroup
 
     enum UpgradeResult {
