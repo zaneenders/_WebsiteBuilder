@@ -90,11 +90,11 @@ extension WSServer {
         }
         """
     }
-    private var socketSecure: String {
+    private var wsSocket: String {
         #if DEBUG
-            return "ws"
+            return "var wsconnection = new WebSocket(`ws://[\(host)]:\(port)/websocket`)"
         #else 
-            return "wss"
+            return "var wsconnection = new WebSocket(`wss://zaneenders.com/websocket`)"
         #endif
     }
     
@@ -109,7 +109,7 @@ extension WSServer {
             \(styles)
             </style>
             <script>
-            var wsconnection = new WebSocket(`\(socketSecure)://[\(host)]:\(port)/websocket`)
+            \(wsSocket)
             \(js)
             </script>
           </head>
