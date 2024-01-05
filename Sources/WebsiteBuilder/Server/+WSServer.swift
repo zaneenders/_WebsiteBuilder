@@ -1,16 +1,35 @@
+import Foundation
+
+struct ServerResult: Codable {
+    let html: String
+    let javascript: String
+}
+
 actor ServerState {
     var connections: [String: Int] = [:]
 
     func update(_ id: String, _ input: String) -> String {
         // TODO handle logic from input
-        return body(increment(id))
+        let data = try? JSONEncoder().encode(ServerResult(html: body(increment(id)), javascript: btnHandler))
+        if data != nil {
+            return String(data: data!, encoding: .utf8)!
+        } else {
+            return "server error"
+        }
     }
 
     func view(_ id: String) -> String {
+        var b = ""
         if connections[id] == nil {
-            return body(0)
+            b = body(0)
         } else {
-            return body(connections[id]!)
+            b = body(connections[id]!)
+        }
+        let data = try? JSONEncoder().encode(ServerResult(html: b, javascript: btnHandler))
+        if data != nil {
+            return String(data: data!, encoding: .utf8)!
+        } else {
+            return "server error"
         }
     }
 
@@ -40,24 +59,26 @@ func body(_ count: Int = 0) -> String {
     }
 }
 
-extension WSServer {
-
-    private var msgHandler: String {
-        """
-        wsconnection.onmessage = function (msg) {
-            let body = document.querySelector("body")
-            body.innerHTML = msg.data
-            \(btnHandler)
-        }
-        """
-    }
-
-    private var btnHandler: String {
+ var btnHandler: String {
         """
         let btn = document.querySelector(".button")
         btn.addEventListener(`click`, function (e) {
             wsconnection.send(`Hello`)
         })
+        """
+    }
+
+extension WSServer {
+
+    private var msgHandler: String {
+        // TODO replace eval with update()
+        """
+        wsconnection.onmessage = function (msg) {
+            let body = document.querySelector("body")
+            let result = JSON.parse(msg.data)
+            body.innerHTML = result.html
+            eval(result.javascript)
+        }
         """
     }
 
