@@ -92,12 +92,14 @@ extension WSServer {
     }
     private var wsSocket: String {
         #if DEBUG
-            return "var wsconnection = new WebSocket(`ws://[\(host)]:\(port)/websocket`)"
-        #else 
-            return "var wsconnection = new WebSocket(`wss://zaneenders.com/websocket`)"
+            return
+                "var wsconnection = new WebSocket(`ws://[\(host)]:\(port)/websocket`)"
+        #else
+            return
+                "var wsconnection = new WebSocket(`wss://\(domain)/websocket`)"
         #endif
     }
-    
+
     private var websocketResponse: String {
         """
         <!DOCTYPE html>
@@ -126,13 +128,16 @@ struct WSServer {
     let storage = ServerState()
 
     public init(
+        domain: String,
         host: String, port: Int, eventLoopGroup: MultiThreadedEventLoopGroup
     ) {
+        self.domain = domain
         self.host = host
         self.port = port
         self.eventLoopGroup = eventLoopGroup
     }
 
+    private let domain: String
     private let host: String
     private let port: Int
     private let eventLoopGroup: MultiThreadedEventLoopGroup
