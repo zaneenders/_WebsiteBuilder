@@ -67,13 +67,6 @@ extension WSServer {
 
     private var js: String {
         """
-        var scheme = 'ws';
-        var location = document.location;
-
-        if (location.protocol === 'https:') {
-            scheme += 's';
-        }
-        var wsconnection = new WebSocket(`${scheme}://[\(host)]:\(port)/websocket`)
         \(msgHandler) 
         document.addEventListener("DOMContentLoaded", function(event){
             const btn = document.querySelector(".button")
@@ -97,6 +90,14 @@ extension WSServer {
         }
         """
     }
+    private var socketSecure: String {
+        #if DEBUG
+            return "ws"
+        #else 
+            return "wss"
+        #endif
+    }
+    
     private var websocketResponse: String {
         """
         <!DOCTYPE html>
@@ -108,6 +109,7 @@ extension WSServer {
             \(styles)
             </style>
             <script>
+            var wsconnection = new WebSocket(`\(socketSecure)://[\(host)]:\(port)/websocket`)
             \(js)
             </script>
           </head>
