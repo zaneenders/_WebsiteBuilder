@@ -21,7 +21,15 @@ extension WebSite {
     static func run() async {
         let s = Server(Routes.pages)
         do {
-            try await s.run()
+            let host = "::"
+            let port = 8080
+            //try await s.run()
+            try await WSServer(
+                host: host,
+                port: port,
+                eventLoopGroup: .singleton
+            )
+            .run()
         } catch {
             print("Server Error: \(error)")
         }

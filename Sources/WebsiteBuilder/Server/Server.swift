@@ -14,14 +14,12 @@ actor Server {
     side.
     */
     private(set) static var pages: [RouteString: any HasContent] = [:]
-    let host = "::"
-    let port = 8080
 
     init(_ pages: [RouteString: any HasContent]) {
         Server.pages = pages
     }
 
-    func run() throws {
+    func run(_ host: String, _ port: Int) throws {
         // creates a thread pool for File IO
         let fileIO = NonBlockingFileIO(threadPool: .singleton)
         // Boot straps a thread pool for the actual server

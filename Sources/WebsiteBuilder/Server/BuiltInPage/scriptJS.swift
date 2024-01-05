@@ -1,7 +1,7 @@
 struct JSPage: HasContent, HasURL {
     static let url: String = "/script.js"
 
-    var contents: String = jsFileContents(true)
+    var contents: String = jsFileContents(false)
 
     private static func jsFileContents(_ basic: Bool = true) -> String {
         if basic {
