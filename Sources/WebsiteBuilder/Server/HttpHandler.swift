@@ -134,11 +134,16 @@ func httpResponseHead(
 
 extension Server.HTTPHandler {
 
+    enum FileType {
+        case ico
+        case svg_xml
+    }
     // Chopped up from HTTP1 Server Example
     private func handleFile(
         context: ChannelHandlerContext,
         request: HTTPServerRequestPart,
-        _ filePath: String
+        _ filePath: String,
+        _ type: FileType
     ) {
         self.buffer.clear()
         switch request {
@@ -164,8 +169,14 @@ extension Server.HTTPHandler {
                 var response = httpResponseHead(request: request, status: .ok)
                 response.headers.add(
                     name: "Content-Length", value: "\(region.endIndex)")
-                response.headers.add(
-                    name: "Content-Type", value: "image/x-icon")
+                switch type {
+                case .ico:
+                    response.headers.add(
+                        name: "Content-Type", value: "image/x-icon")
+                case .svg_xml:
+                    response.headers.add(
+                        name: "Content-Type", value: "image/svg+xml")
+                }
                 context.write(
                     self.wrapOutboundOut(.head(response)), promise: nil)
                 context.writeAndFlush(
@@ -199,10 +210,21 @@ extension Server.HTTPHandler {
         }
         switch reqPart {
         case .head(let request):
+            // TODO how do we not manually add this routes
             if request.uri == "/favicon.ico" {
                 self.handler = { c, r in
                     self.handleFile(
-                        context: c, request: r, "Resources/favicon.ico"
+                        context: c, request: r, "Resources/favicon.ico", .ico
+                    )
+                }
+                self.handler!(context, reqPart)
+                return
+            }
+            if request.uri == "/github-mark.svg" {
+                self.handler = { c, r in
+                    self.handleFile(
+                        context: c, request: r, "Resources/github-mark.svg",
+                        .svg_xml
                     )
                 }
                 self.handler!(context, reqPart)

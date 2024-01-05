@@ -1,4 +1,5 @@
 public protocol WebPage: HasURL, HasContent, HasSubPages {
+    // TODO maybe rename with an underscore so this is harder to overwrite?
     var contents: String { get }
     init()  // Thing I will want to change this.
     // So that things can be composed and you pass in one initialized tree
