@@ -16,6 +16,7 @@ extension WSServer {
         """
         \(msgHandler) 
         """
+        // TODO handle disconnect state
     }
 
     private var styles: String {
