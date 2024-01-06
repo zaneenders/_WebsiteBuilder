@@ -26,6 +26,7 @@ public struct State<Value> {
     }
 }
 
+// TODO COW box?
 final class Storage<Value> {
 
     var value: Value

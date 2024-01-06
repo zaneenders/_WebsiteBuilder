@@ -5,19 +5,21 @@ struct ServerResult: Codable {
     let javascript: String
 }
 
-actor ServerState {
-
-    init(_ root: some Block) {
-        self.root = root
-        self.content = self.draw(root)
-    }
-
+struct UserState {
+    let userID: String
     let root: any Block
-    var content: String = ""
-    var connections: [String: Int] = [:]
     var actions: [String: () -> Void] = [:]
 
-    private func draw(_ block: some Block) -> String {
+    init(_ id: String, _ root: some Block) {
+        self.userID = id
+        self.root = root
+    }
+
+    mutating func draw() -> String {
+        draw(root)
+    }
+
+    private mutating func draw(_ block: some Block) -> String {
         if let base = block as? any BaseBlock {
             switch base.type {
             case .text:
@@ -40,40 +42,54 @@ actor ServerState {
             return draw(block.component)
         }
     }
+}
+
+actor ServerState {
+
+    init(_ root: some Block) {
+        self.root = root
+    }
+
+    let root: any Block
+    var content: String = ""
+    var connections: [String: UserState] = [:]
+
     func update(_ id: String, _ input: String) -> String {
         print(input)
-        if let a = actions[input] {
-            a()
-        }
-        // TODO handle logic from input
-        let data = try? JSONEncoder().encode(
-            ServerResult(html: draw(root), javascript: serverJS))
-        if data != nil {
-            return String(data: data!, encoding: .utf8)!
+        let out: String
+        if var userState = connections[id] {
+            if let a = userState.actions[input] {
+                a()
+            }
+            // TODO handle logic from input
+            let data = try? JSONEncoder().encode(
+                ServerResult(html: userState.draw(), javascript: serverJS))
+            if data != nil {
+                out = String(data: data!, encoding: .utf8)!
+            } else {
+                out = "server error"
+            }
+            connections[id] = userState
         } else {
-            return "server error"
+            var state = UserState(id, root)
+            if let a = state.actions[input] {
+                a()
+            }
+            // TODO handle logic from input
+            let data = try? JSONEncoder().encode(
+                ServerResult(html: state.draw(), javascript: serverJS))
+            if data != nil {
+                out = String(data: data!, encoding: .utf8)!
+            } else {
+                out = "server error"
+            }
+            connections[id] = state
         }
+        return out
     }
 
     func view(_ id: String) -> String {
-        let data = try? JSONEncoder().encode(
-            ServerResult(html: draw(root), javascript: serverJS))
-        if data != nil {
-            return String(data: data!, encoding: .utf8)!
-        } else {
-            return "server error"
-        }
-    }
-
-    func increment(_ id: String) -> Int {
-        if connections[id] == nil {
-            connections[id] = 1
-            return 1
-        } else {
-            let r = connections[id]! + 1
-            connections[id] = r
-            return r
-        }
+        update(id, "")
     }
 
     var serverJS: String {
