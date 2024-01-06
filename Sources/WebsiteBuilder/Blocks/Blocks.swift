@@ -8,9 +8,9 @@ public struct Button: Block, BaseBlock {
     let label: String
     let action: () -> Void
 
-    public init(_ label: String) {
+    public init(_ label: String, _ action: @escaping () -> Void) {
         self.label = label
-        self.action = { print("action") }
+        self.action = action
     }
 }
 

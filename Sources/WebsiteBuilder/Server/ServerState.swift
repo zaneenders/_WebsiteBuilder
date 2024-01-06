@@ -5,35 +5,49 @@ struct ServerResult: Codable {
     let javascript: String
 }
 
-func draw(_ block: some Block) -> String {
-    if let base = block as? any BaseBlock {
-        switch base.type {
-        case .text:
-            let text = block as! Text
-            return div { text.text }
-        case .button:
-            let button = block as! Button
-            return div { button.label }
-        case .tuple:
-            let tuple = block as! TupleBlock
-            return div { draw(tuple.value.acc) } + div { draw(tuple.value.n) }
-        }
-    } else {
-        return draw(block.component)
-    }
-}
-
 actor ServerState {
-    let content: String
-    init(_ root: some Block) {
-        self.content = draw(root)
-    }
-    var connections: [String: Int] = [:]
 
+    init(_ root: some Block) {
+        self.root = root
+        self.content = self.draw(root)
+    }
+
+    let root: any Block
+    var content: String = ""
+    var connections: [String: Int] = [:]
+    var actions: [String: () -> Void] = [:]
+
+    private func draw(_ block: some Block) -> String {
+        if let base = block as? any BaseBlock {
+            switch base.type {
+            case .text:
+                let text = block as! Text
+                return div { text.text }
+            case .button:
+                let button = block as! Button
+                let buttonID = UUID()
+                let action = button.action
+                actions["\(buttonID)"] = action
+                // mark button with a hash and save button for that hash
+                return """
+                    <div id=\(buttonID) class="button" >\(button.label)</div>
+                    """
+            case .tuple:
+                let tuple = block as! TupleBlock
+                return draw(tuple.value.acc) + draw(tuple.value.n)
+            }
+        } else {
+            return draw(block.component)
+        }
+    }
     func update(_ id: String, _ input: String) -> String {
+        print(input)
+        if let a = actions[input] {
+            a()
+        }
         // TODO handle logic from input
         let data = try? JSONEncoder().encode(
-            ServerResult(html: body(increment(id)), javascript: serverJS))
+            ServerResult(html: draw(root), javascript: serverJS))
         if data != nil {
             return String(data: data!, encoding: .utf8)!
         } else {
@@ -42,14 +56,8 @@ actor ServerState {
     }
 
     func view(_ id: String) -> String {
-        var b = ""
-        if connections[id] == nil {
-            b = body(0)
-        } else {
-            b = body(connections[id]!)
-        }
         let data = try? JSONEncoder().encode(
-            ServerResult(html: b, javascript: serverJS))
+            ServerResult(html: draw(root), javascript: serverJS))
         if data != nil {
             return String(data: data!, encoding: .utf8)!
         } else {
@@ -68,29 +76,16 @@ actor ServerState {
         }
     }
 
-    func body(_ count: Int = 0) -> String {
-        if count <= 0 {
-            return """
-                <h1>WebSocket Stream</h1>
-                <div class="button">Button</div>       
-                <div>\(content)</div>
-                """
-        } else {
-            return """
-                <h1>WebSocket Stream</h1>
-                <div class="button">Button count \(count)</div>     
-                <div>\(content)</div>
-                """
-        }
-    }
-
     var serverJS: String {
         """
         document.title = "Zane Enders"
-        let btn = document.querySelector(".button")
-        btn.addEventListener(`click`, function (e) {
-            wsconnection.send(`Hello`)
-        })
+        let btns = document.querySelectorAll(".button")
+        for (let btn of btns) {
+            btn.addEventListener(`click`, function (e) {
+                console.log(btn.id)
+                wsconnection.send(btn.id)
+            })
+        }
         """
     }
 }
