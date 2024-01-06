@@ -8,10 +8,15 @@ public struct State<Value> {
 
     public var wrappedValue: Value {
         get {
-            _storage.value
+            _storage.value.value
         }
         nonmutating set {
-            _storage.value = newValue
+            if !isKnownUniquelyReferenced(&_storage.value) {
+                print("COW")
+                _storage.value = _Storage(newValue)
+                return
+            }
+            _storage.value.value = newValue
         }
     }
 
@@ -28,6 +33,15 @@ public struct State<Value> {
 
 // TODO COW box?
 final class Storage<Value> {
+
+    var value: _Storage<Value>
+
+    init(_ value: Value) {
+        self.value = _Storage(value)
+    }
+}
+
+final class _Storage<Value> {
 
     var value: Value
 
