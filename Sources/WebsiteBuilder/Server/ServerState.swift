@@ -6,6 +6,10 @@ struct ServerResult: Codable {
 }
 
 actor ServerState {
+    let content: String
+    init(_ root: some Block) {
+        self.content = "\(root)"
+    }
     var connections: [String: Int] = [:]
 
     func update(_ id: String, _ input: String) -> String {
@@ -51,11 +55,13 @@ actor ServerState {
             return """
                 <h1>WebSocket Stream</h1>
                 <div class="button">Button</div>       
+                <div>\(content)</div>
                 """
         } else {
             return """
                 <h1>WebSocket Stream</h1>
                 <div class="button">Button count \(count)</div>     
+                <div>\(content)</div>
                 """
         }
     }

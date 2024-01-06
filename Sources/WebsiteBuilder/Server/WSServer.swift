@@ -19,18 +19,19 @@ import NIOWebSocket
 
 struct WSServer {
 
-    let storage = ServerState()
+    let storage: ServerState
 
     public init(
+        block: some Block,
         domain: String,
         host: String, port: Int, eventLoopGroup: MultiThreadedEventLoopGroup
     ) {
+        self.storage = ServerState(block)
         self.domain = domain
         self.host = host
         self.port = port
         self.eventLoopGroup = eventLoopGroup
     }
-
     let domain: String
     let host: String
     let port: Int
