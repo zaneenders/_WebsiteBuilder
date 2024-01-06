@@ -7,14 +7,7 @@ public protocol WebPage: HasURL, HasContent, HasSubPages {
 
 extension WebPage {
     public static var url: String {
-        if let u = Routes.routes["\(Self.self)"] {
-            return u
-        } else {
-            print("Page:[\(Self.self)] not registered unable to link")
-            print(
-                "Make sure \(Self.self) is added to the proper subPages array.")
-            return "/404"
-        }
+        fatalError("broken")
     }
 
     public static var link: HTMLString {

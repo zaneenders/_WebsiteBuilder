@@ -3,7 +3,19 @@ public protocol Block {
     @BlockParser var component: Component { get }
 }
 
+public struct Button: Block, BaseBlock {
+    let type: BlockType = .button
+    let label: String
+    let action: () -> Void
+
+    public init(_ label: String) {
+        self.label = label
+        self.action = { print("action") }
+    }
+}
+
 public struct Text: Block, BaseBlock {
+    let type: BlockType = .text
     let text: String
 
     public init(_ text: String) {
@@ -31,9 +43,20 @@ public enum BlockParser {
 
 }
 
-struct Nothing: Block, BaseBlock {}
+struct Nothing: Block, BaseBlock {
+    var type: BlockType {
+        fatalError("not a valid block")
+    }
+}
+
+enum BlockType {
+    case button
+    case text
+    case tuple
+}
 
 protocol BaseBlock: Block {
+    var type: BlockType { get }
 }
 extension BaseBlock {
     public var component: some Block {
@@ -41,10 +64,7 @@ extension BaseBlock {
     }
 }
 
-struct TupleBlock: Block {
+struct TupleBlock: Block, BaseBlock {
     let value: (acc: any Block, n: any Block)
-
-    var component: some Block {
-        Nothing()
-    }
+    let type: BlockType = .tuple
 }

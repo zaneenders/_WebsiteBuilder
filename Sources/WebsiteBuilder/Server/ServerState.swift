@@ -5,10 +5,28 @@ struct ServerResult: Codable {
     let javascript: String
 }
 
+func draw(_ block: some Block) -> String {
+    if let base = block as? any BaseBlock {
+        switch base.type {
+        case .text:
+            let text = block as! Text
+            return div { text.text }
+        case .button:
+            let button = block as! Button
+            return div { button.label }
+        case .tuple:
+            let tuple = block as! TupleBlock
+            return div { draw(tuple.value.acc) } + div { draw(tuple.value.n) }
+        }
+    } else {
+        return draw(block.component)
+    }
+}
+
 actor ServerState {
     let content: String
     init(_ root: some Block) {
-        self.content = "\(root)"
+        self.content = draw(root)
     }
     var connections: [String: Int] = [:]
 
