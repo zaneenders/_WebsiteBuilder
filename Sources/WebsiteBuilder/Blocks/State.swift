@@ -12,9 +12,7 @@ public struct State<Value> {
         }
         nonmutating set {
             if !isKnownUniquelyReferenced(&_storage.value) {
-                print("COW")
-                _storage.value = _Storage(newValue)
-                return
+                fatalError("COW")
             }
             _storage.value.value = newValue
         }
@@ -33,11 +31,19 @@ public struct State<Value> {
 
 // TODO COW box?
 final class Storage<Value> {
+    var _value: _Storage<Value>
 
-    var value: _Storage<Value>
+    var value: _Storage<Value> {
+        get {
+            _value
+        }
 
+        set {
+            _value = newValue
+        }
+    }
     init(_ value: Value) {
-        self.value = _Storage(value)
+        self._value = _Storage(value)
     }
 }
 
