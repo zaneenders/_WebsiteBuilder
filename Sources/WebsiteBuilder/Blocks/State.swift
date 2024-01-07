@@ -1,7 +1,3 @@
-protocol StateProperty {
-    var value: Any { get nonmutating set }
-}
-
 @propertyWrapper
 public struct State<Value>: StateProperty {
     private var box: Box<Box<Value>>
@@ -33,18 +29,27 @@ public struct State<Value>: StateProperty {
     }
 }
 
+// protocols uses to swap boxes
+
+protocol StateProperty {
+    var value: Any { get nonmutating set }
+}
+
 protocol BoxProperty<T> {
     associatedtype T
     associatedtype B = Box<T>
-    var _value: T { get }
 
+    var _value: T { get }
+    /// Creates a new box and places the current value in the new box
     func clone() -> B
 }
-// TODO COW box?
+
 final class Box<Value>: BoxProperty {
+
     func clone() -> Box<Value> {
         return Box(value)
     }
+
     var value: Value
 
     var _value: Value {
