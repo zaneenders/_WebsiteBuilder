@@ -1,20 +1,24 @@
+protocol StateProperty {
+    var value: Any { get nonmutating set }
+}
+
 @propertyWrapper
-public struct State<Value> {
-    private let _storage: Storage<Value>
+public struct State<Value>: StateProperty {
+    private var box: Box<Box<Value>>
 
     public init(wrappedValue: Value) {
-        self._storage = Storage(wrappedValue)
+        self.box = Box(Box(wrappedValue))
     }
 
     public var wrappedValue: Value {
-        get {
-            _storage.value.value
-        }
+        get { box.value.value }
+        nonmutating set { box.value.value = newValue }
+    }
+
+    var value: Any {
+        get { box.value }
         nonmutating set {
-            if !isKnownUniquelyReferenced(&_storage.value) {
-                fatalError("COW")
-            }
-            _storage.value.value = newValue
+            box.value = newValue as! Box<Value>
         }
     }
 
@@ -29,27 +33,23 @@ public struct State<Value> {
     }
 }
 
-// TODO COW box?
-final class Storage<Value> {
-    var _value: _Storage<Value>
+protocol BoxProperty<T> {
+    associatedtype T
+    associatedtype B = Box<T>
+    var _value: T { get }
 
-    var value: _Storage<Value> {
-        get {
-            _value
-        }
-
-        set {
-            _value = newValue
-        }
-    }
-    init(_ value: Value) {
-        self._value = _Storage(value)
-    }
+    func clone() -> B
 }
-
-final class _Storage<Value> {
-
+// TODO COW box?
+final class Box<Value>: BoxProperty {
+    func clone() -> Box<Value> {
+        return Box(value)
+    }
     var value: Value
+
+    var _value: Value {
+        value
+    }
 
     init(_ value: Value) {
         self.value = value

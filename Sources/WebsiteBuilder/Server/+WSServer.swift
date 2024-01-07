@@ -19,6 +19,7 @@ extension WSServer {
         // TODO handle disconnect state
     }
 
+    // Do I need this? Maybe only page defaults?
     private var styles: String {
         """
         * {

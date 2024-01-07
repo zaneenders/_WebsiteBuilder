@@ -149,6 +149,7 @@ struct WSServer {
         }
     }
 
+    // TODO fix tree-sitter parse bug
     private func handleWebsocketChannel(
         _ channel: NIOAsyncChannel<WebSocketFrame, WebSocketFrame>
     ) async throws {
