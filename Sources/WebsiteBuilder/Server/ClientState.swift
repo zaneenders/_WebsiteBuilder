@@ -4,7 +4,7 @@ extension ServerState {
     struct ClientState {
         let userID: String
         let block: any Block
-
+        let rootNode: Node 
         // DOM State
         var actions: [String: () -> Void] = [:]
         var elements: [String: HTMLElement]
@@ -14,6 +14,7 @@ extension ServerState {
             let copy = root
             let page = setup(copy)
             self.block = copy
+            self.rootNode = Node("\(block)")
             var initHtml = ""
             var pageComponents: [HTMLElement] = []
             for (h, c) in page {
@@ -32,6 +33,10 @@ extension ServerState {
             // Setup session
             // - build html
             self.userID = id
+        }
+
+        mutating func swapBoxes() {
+            self.block.swapBoxes(rootNode)
         }
 
         mutating func drawBody() -> String {

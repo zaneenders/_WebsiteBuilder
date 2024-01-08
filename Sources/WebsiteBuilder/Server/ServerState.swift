@@ -33,7 +33,7 @@ actor ServerState {
             */
             // TODO find boxes to swap
             printBlock(clientState.block)
-            clientState.block.swapBoxes()
+            clientState.swapBoxes()
             print(oldBox?.value)
             print(newBox?.value)
             if let a = clientState.actions[input] {
