@@ -5,20 +5,34 @@ struct ServerResult: Codable {
     let javascript: String
 }
 
+var oldBox: Box<Int>!
+var newBox: Box<Int>!
+
+// a setup function
 func setup(_ block: some Block) -> [(String, HTMLElement)] {
     let mirror = Mirror(reflecting: block)
     for (label, value) in mirror.children {
         let l = "\(label == nil ? "" : label!)"
+        // If there is a state property create a new box to swap out with the orignal
         if let state = value as? any StateProperty {
-            let b = state.value as! any BoxProperty
-            // !!! This doesn't work
+            let bp = state.value as! any BoxProperty
             // TODO save box somewhere?
-            let newBox = b.clone()
-            // print(type(of: state.value))
-            // print(type(of: newBox))
-            // print("@State: \(l) has state: \(state.value)")
-            // swap defualt box out
-            state.value = newBox
+            #warning("Start here!!!")
+            /*
+            TODO move to UserState
+            create a muating node tree to match the BlockGraph.
+            Store the boxes in that graph and use a similar dirty equal to invlaid nodes
+            Create new boxes as nessary
+            keep starting boxes at starting state
+            */
+            oldBox = state.value as! Box<Int>
+            print(
+                Unmanaged.passUnretained(state.value as! AnyObject).toOpaque())
+            let nb = bp.clone()
+            newBox = nb as! Box<Int>
+            print(Unmanaged.passUnretained(nb as! AnyObject).toOpaque())
+            // swap box out
+            state.value = nb
         }
     }
 
@@ -144,18 +158,32 @@ actor ServerState {
     init(_ root: some Block) {
         self.root = root
     }
+
     let root: any Block
     var content: String = ""
     var connections: [String: UserState] = [:]
 
+    func remove(_ id: String) {
+        // TODO clean up Client State, Client has disconnected.
+    }
+
     /// Called when the user hits a button or request a state change to the page
     func update(_ id: String, _ input: String) -> String {
         let out: String
+        // Current connection
         if var userState = connections[id] {
-            // Current connection
+            /*
+            Maybe we swap out the boxes before and after applying the action and drawing the body.
+            I do wonder how to keep track of which session needs which boxes.
+            Might have to do a Node tree:while condition
+            */
+            print(oldBox?.value)
+            print(newBox?.value)
             if let a = userState.actions[input] {
                 a()
             }
+            print(oldBox?.value)
+            print(newBox?.value)
             // TODO handle logic from input
             let data = try? JSONEncoder().encode(
                 ServerResult(html: userState.drawBody(), javascript: serverJS))
@@ -166,6 +194,7 @@ actor ServerState {
             }
             connections[id] = userState
         } else {
+            // Create new state
             var state = UserState(id, root)
             printBlock(state.block)
             print("new connection \(id)")

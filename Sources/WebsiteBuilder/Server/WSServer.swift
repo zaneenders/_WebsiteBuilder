@@ -176,6 +176,8 @@ struct WSServer {
                             // This is an unsolicited close. We're going to send a response frame and
                             // then, when we've sent it, close up shop. We should send back the close code the remote
                             // peer sent us, unless they didn't send one at all.
+                            print("removing \(id)")
+                            await storage.remove(id)
                             print("Received close")
                             var data = frame.unmaskedData
                             let closeDataCode =

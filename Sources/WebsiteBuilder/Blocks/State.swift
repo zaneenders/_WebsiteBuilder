@@ -49,9 +49,16 @@ final class Box<Value>: BoxProperty {
     }
 }
 
-
 @propertyWrapper
 public struct State<Value>: StateProperty {
+    /*
+    So switching the boxes does work. But because we can't change the outter most box
+    becase it is nonmutating all copies have to route through that one pointer.
+    That seems like a problem and a bottle neck
+
+    I think I can fake it be wrapping it in an actor and updating and viewing the boxes
+    per request
+    */
     private var box: Box<Box<Value>>
 
     public init(wrappedValue: Value) {
@@ -80,7 +87,6 @@ public struct State<Value>: StateProperty {
             })
     }
 }
-
 
 @propertyWrapper
 public struct Binding<Value> {

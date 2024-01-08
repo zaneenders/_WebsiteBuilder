@@ -1,4 +1,5 @@
 import Foundation
+
 func textDiv(_ text: Text) -> DivInfo {
     let buttonID = "\(UUID())"
     func rebuild(_ txt: String) -> String {
