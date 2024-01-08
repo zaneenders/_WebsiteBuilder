@@ -1,4 +1,4 @@
-import Foundation // used for UUID
+import Foundation  // used for UUID
 
 var oldBox: Box<Int>!
 var newBox: Box<Int>!
@@ -89,38 +89,7 @@ actor ServerState {
     }
 }
 
-/*
-I think I need to make this a method on Block and pass a node in that contains the Boxes 
-that I will swap in
-*/
-fileprivate func swapBoxes(_ block: some Block) { 
-    let mirror = Mirror(reflecting: block)
-    for (label, value) in mirror.children {
-        let l = "\(label == nil ? "" : label!) : \(value)"
-        if var state = value as? any StateProperty {
-            var b = state.value as! any BoxProperty
-            print("Swapping \(block)")
-            // TODO swap
-        }
-    }
-
-    if let base = block as? any BaseBlock {
-        switch base.type {
-        case .text:
-            let _ = block as! Text
-        case .button:
-            let _ = block as! Button
-        case .tuple:
-            let tuple = block as! TupleBlock
-            swapBoxes(tuple.value.acc)
-            swapBoxes(tuple.value.n)
-        }
-    } else {
-        swapBoxes(block.component)
-    }
-}
-
-fileprivate func printBlock(_ block: some Block) {
+private func printBlock(_ block: some Block) {
     let mirror = Mirror(reflecting: block)
     for (label, value) in mirror.children {
         let l = "\(label == nil ? "" : label!) : \(value)"
@@ -144,4 +113,3 @@ fileprivate func printBlock(_ block: some Block) {
         printBlock(block.component)
     }
 }
-
