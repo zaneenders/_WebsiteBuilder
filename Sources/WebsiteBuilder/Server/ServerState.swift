@@ -1,37 +1,7 @@
-import Foundation
-
-struct ServerResult: Codable {
-    let html: String
-    let javascript: String
-}
+import Foundation // used for UUID
 
 var oldBox: Box<Int>!
 var newBox: Box<Int>!
-
-func printBlock(_ block: some Block) {
-    let mirror = Mirror(reflecting: block)
-    for (label, value) in mirror.children {
-        let l = "\(label == nil ? "" : label!) : \(value)"
-        if var state = value as? any StateProperty {
-            var b = state.value as! any BoxProperty
-        }
-    }
-
-    if let base = block as? any BaseBlock {
-        switch base.type {
-        case .text:
-            let text = block as! Text
-        case .button:
-            let button = block as! Button
-        case .tuple:
-            let tuple = block as! TupleBlock
-            printBlock(tuple.value.acc)
-            printBlock(tuple.value.n)
-        }
-    } else {
-        printBlock(block.component)
-    }
-}
 
 actor ServerState {
 
@@ -61,6 +31,7 @@ actor ServerState {
             I do wonder how to keep track of which session needs which boxes.
             Might have to do a Node tree:while condition
             */
+            // TODO find boxes to swap
             print(oldBox?.value)
             print(newBox?.value)
             if let a = clientState.actions[input] {
@@ -115,3 +86,29 @@ actor ServerState {
         """
     }
 }
+
+func printBlock(_ block: some Block) {
+    let mirror = Mirror(reflecting: block)
+    for (label, value) in mirror.children {
+        let l = "\(label == nil ? "" : label!) : \(value)"
+        if var state = value as? any StateProperty {
+            var b = state.value as! any BoxProperty
+        }
+    }
+
+    if let base = block as? any BaseBlock {
+        switch base.type {
+        case .text:
+            let text = block as! Text
+        case .button:
+            let button = block as! Button
+        case .tuple:
+            let tuple = block as! TupleBlock
+            printBlock(tuple.value.acc)
+            printBlock(tuple.value.n)
+        }
+    } else {
+        printBlock(block.component)
+    }
+}
+

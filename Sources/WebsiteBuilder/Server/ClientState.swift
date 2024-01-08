@@ -1,53 +1,5 @@
 import Foundation
 
-// a setup function
-private func setup(_ block: some Block) -> [(String, HTMLElement)] {
-    let mirror = Mirror(reflecting: block)
-    for (label, value) in mirror.children {
-        let l = "\(label == nil ? "" : label!)"
-        // If there is a state property create a new box to swap out with the orignal
-        if let state = value as? any StateProperty {
-            let bp = state.value as! any BoxProperty
-            // TODO save box somewhere?
-            #warning("Start here!!!")
-            /*
-            TODO move to UserState
-            create a muating node tree to match the BlockGraph.
-            Store the boxes in that graph and use a similar dirty equal to invlaid nodes
-            Create new boxes as nessary
-            keep starting boxes at starting state
-            */
-            oldBox = state.value as! Box<Int>
-            print(
-                Unmanaged.passUnretained(state.value as! AnyObject).toOpaque())
-            let nb = bp.clone()
-            newBox = nb as! Box<Int>
-            print(Unmanaged.passUnretained(nb as! AnyObject).toOpaque())
-            // swap box out
-            state.value = nb
-        }
-    }
-
-    if let base = block as? any BaseBlock {
-        switch base.type {
-        case .text:
-            let text = block as! Text
-            let textDiv = textDiv(text)
-            return [(textDiv.rebuild(text.text), textDiv)]
-        case .button:
-            let button = block as! Button
-            let btnInfo = setupButton(button)
-            return [(btnInfo.rebuild(button.label), btnInfo)]
-        case .tuple:
-            let tuple = block as! TupleBlock
-            // TODO flatten heigharchy correctly
-            return setup(tuple.value.acc) + setup(tuple.value.n)
-        }
-    } else {
-        return setup(block.component)
-    }
-}
-
 extension ServerState {
     struct ClientState {
         let userID: String
@@ -119,5 +71,53 @@ extension ServerState {
                 return draw(block.component)
             }
         }
+    }
+}
+
+// a setup function
+private func setup(_ block: some Block) -> [(String, HTMLElement)] {
+    let mirror = Mirror(reflecting: block)
+    for (label, value) in mirror.children {
+        let l = "\(label == nil ? "" : label!)"
+        // If there is a state property create a new box to swap out with the orignal
+        if let state = value as? any StateProperty {
+            let bp = state.value as! any BoxProperty
+            // TODO save box somewhere?
+            #warning("Start here!!!")
+            /*
+            TODO move to UserState
+            create a muating node tree to match the BlockGraph.
+            Store the boxes in that graph and use a similar dirty equal to invlaid nodes
+            Create new boxes as nessary
+            keep starting boxes at starting state
+            */
+            oldBox = state.value as! Box<Int>
+            print(
+                Unmanaged.passUnretained(state.value as! AnyObject).toOpaque())
+            let nb = bp.clone()
+            newBox = nb as! Box<Int>
+            print(Unmanaged.passUnretained(nb as! AnyObject).toOpaque())
+            // swap box out
+            state.value = nb
+        }
+    }
+
+    if let base = block as? any BaseBlock {
+        switch base.type {
+        case .text:
+            let text = block as! Text
+            let textDiv = textDiv(text)
+            return [(textDiv.rebuild(text.text), textDiv)]
+        case .button:
+            let button = block as! Button
+            let btnInfo = setupButton(button)
+            return [(btnInfo.rebuild(button.label), btnInfo)]
+        case .tuple:
+            let tuple = block as! TupleBlock
+            // TODO flatten heigharchy correctly
+            return setup(tuple.value.acc) + setup(tuple.value.n)
+        }
+    } else {
+        return setup(block.component)
     }
 }
