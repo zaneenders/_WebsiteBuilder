@@ -3,13 +3,13 @@ extension Block {
     I think I need to make this a method on Block and pass a node in that contains the Boxes
     that I will swap in
     */
-    fileprivate func swapBoxes() {
+    func swapBoxes() {
         let mirror = Mirror(reflecting: self)
         for (label, value) in mirror.children {
             let l = "\(label == nil ? "" : label!) : \(value)"
             if var state = value as? any StateProperty {
                 var b = state.value as! any BoxProperty
-                print("Swapping \(block)")
+                print("Swapping \(self)")
                 // TODO swap
             }
         }
@@ -26,7 +26,7 @@ extension Block {
                 tuple.value.n.swapBoxes()
             }
         } else {
-            block.component.swapBoxes()
+            self.component.swapBoxes()
         }
     }
 }
