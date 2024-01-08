@@ -5,17 +5,19 @@ struct ServerResult: Codable {
     let javascript: String
 }
 
-private func setup(_ block: some Block) -> [(String, HTMLElement)] {
+func setup(_ block: some Block) -> [(String, HTMLElement)] {
     let mirror = Mirror(reflecting: block)
     for (label, value) in mirror.children {
         let l = "\(label == nil ? "" : label!)"
         if let state = value as? any StateProperty {
             let b = state.value as! any BoxProperty
+            // !!! This doesn't work
             // TODO save box somewhere?
             let newBox = b.clone()
             // print(type(of: state.value))
             // print(type(of: newBox))
             // print("@State: \(l) has state: \(state.value)")
+            // swap defualt box out
             state.value = newBox
         }
     }
@@ -40,67 +42,29 @@ private func setup(_ block: some Block) -> [(String, HTMLElement)] {
     }
 }
 
-func textDiv(_ text: Text) -> DivInfo {
-    let buttonID = "\(UUID())"
-    func rebuild(_ txt: String) -> String {
-        return "<div id=\(buttonID)>\(txt)</div>"
-    }
-    return DivInfo(id: buttonID, rebuild: rebuild)
-}
-
-enum ElementType {
-    case div
-    case btn
-}
-
-protocol HTMLElement {
-    var type: ElementType { get }
-    var id: String { get }
-}
-
-struct DivInfo: HTMLElement {
-    let type: ElementType = .div
-    let id: String
-    let rebuild: (String) -> String
-}
-
-struct ButtonInfo: HTMLElement {
-    let type: ElementType = .btn
-    let id: String
-    let rebuild: (String) -> String
-    let action: () -> Void
-}
-
-func setupButton(_ btn: Button) -> ButtonInfo {
-    let buttonID = "\(UUID())"
-    func buildDiv(_ label: String) -> String {
-        return """
-            <div id=\(buttonID) class="button" >\(label)</div>
-            """
-    }
-    return ButtonInfo(id: buttonID, rebuild: buildDiv, action: btn.action)
-}
-
 struct UserState {
     let userID: String
+    let block: any Block
+
+    // DOM State
     var actions: [String: () -> Void] = [:]
     var elements: [String: HTMLElement]
     var order: [Int: String] = [:]
 
     init(_ id: String, _ root: some Block) {
-        let page = setup(root)
+        let copy = root
+        let page = setup(copy)
+        self.block = copy
         var initHtml = ""
         var pageComponents: [HTMLElement] = []
         for (h, c) in page {
             // c = inital page components
             pageComponents += [c]
-            print(c)
             initHtml += h
         }
         var e: [String: HTMLElement] = [:]
         var o: [Int: String] = [:]
         for (i, el) in pageComponents.enumerated() {
-            print(i)
             o[i] = el.id
             e[el.id] = el
         }
@@ -111,21 +75,67 @@ struct UserState {
         self.userID = id
     }
 
-    func drawBody() -> String {
-        print(order.count)
-        var output = ""
-        for i in 0..<order.count {
-            let id = order[i]!
-            let el = elements[id]!
-            switch el.type {
-            case .div:
-                ()
-            case .btn:
-                let b = el as! ButtonInfo
-                ()
+    mutating func drawBody() -> String {
+        actions = [:]
+        return draw(self.block)
+    }
+
+    mutating func draw(_ block: some Block) -> String {
+        let mirror = Mirror(reflecting: block)
+        for (label, value) in mirror.children {
+            let l = "\(label == nil ? "" : label!)"
+            if let state = value as? any StateProperty {
+                let b = state.value as! any BoxProperty
             }
         }
-        return "<div>\(userID)</div>"
+        if let base = block as? any BaseBlock {
+            switch base.type {
+            case .text:
+                let text = block as! Text
+                return div { text.text }
+            case .button:
+                let button = block as! Button
+                let id = "\(UUID())"
+                let copy = userID
+                actions[id] = {
+                    // print("\(copy): \(id)")
+                    button.action()
+                }
+                return """
+                    <div id=\(id) class="button" >\(button.label)</div>
+                    """
+            case .tuple:
+                let tuple = block as! TupleBlock
+                return draw(tuple.value.acc) + draw(tuple.value.n)
+            }
+        } else {
+            return draw(block.component)
+        }
+    }
+}
+
+func printBlock(_ block: some Block) {
+    let mirror = Mirror(reflecting: block)
+    for (label, value) in mirror.children {
+        let l = "\(label == nil ? "" : label!) : \(value)"
+        if var state = value as? any StateProperty {
+            var b = state.value as! any BoxProperty
+        }
+    }
+
+    if let base = block as? any BaseBlock {
+        switch base.type {
+        case .text:
+            let text = block as! Text
+        case .button:
+            let button = block as! Button
+        case .tuple:
+            let tuple = block as! TupleBlock
+            printBlock(tuple.value.acc)
+            printBlock(tuple.value.n)
+        }
+    } else {
+        printBlock(block.component)
     }
 }
 
@@ -143,7 +153,6 @@ actor ServerState {
         let out: String
         if var userState = connections[id] {
             // Current connection
-            print(userState.actions.count)
             if let a = userState.actions[input] {
                 a()
             }
@@ -158,6 +167,7 @@ actor ServerState {
             connections[id] = userState
         } else {
             var state = UserState(id, root)
+            printBlock(state.block)
             print("new connection \(id)")
             // If it's a new connection will there ever be input?
             /*
