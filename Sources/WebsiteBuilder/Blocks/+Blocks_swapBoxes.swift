@@ -12,8 +12,10 @@ extension Block {
             let l = "\(label == nil ? "" : label!) : \(value)"
             if var state = value as? any StateProperty {
                 var b = state.value as! any BoxProperty
-                print("Swapping \(self)")
-                // TODO swap
+                if let name = label {
+                    print("Swapping [[\(self)]]")
+                    node.states[name] = b
+                }
             }
         }
 
@@ -30,6 +32,36 @@ extension Block {
             }
         } else {
             self.component.swapBoxes(Node("\(self)"))
+        }
+    }
+
+    func printBlock() {
+        let mirror = Mirror(reflecting: self)
+        for (label, value) in mirror.children {
+            let l = "\(label == nil ? "" : label!) : \(value)"
+            if var state = value as? any StateProperty {
+                var b = state.value as! any BoxProperty
+                print("@State [[\(b)]] ")
+            }
+        }
+
+        if let base = self as? any BaseBlock {
+            switch base.type {
+            case .text:
+                let text = self as! Text
+                print("TEXT [[\(text.text)]]")
+            case .button:
+                let button = self as! Button
+                print("Button ((\(button.label)))")
+            case .tuple:
+                let tuple = self as! TupleBlock
+                print("{", terminator: "")
+                tuple.value.acc.printBlock()
+                tuple.value.n.printBlock()
+                print("}", terminator: "\n")
+            }
+        } else {
+            self.component.printBlock()
         }
     }
 }

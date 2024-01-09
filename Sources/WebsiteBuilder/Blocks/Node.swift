@@ -1,6 +1,10 @@
 final class Node {
 
+    var states: [String: Any]
+
     init(_ name: String) {
-        print("Node: \(name)")
+
+        self.states = [:]
+        print("Node: [[\(name)]]")
     }
 }

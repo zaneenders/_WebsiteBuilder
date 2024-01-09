@@ -4,7 +4,7 @@ extension ServerState {
     struct ClientState {
         let userID: String
         let block: any Block
-        let rootNode: Node 
+        let rootNode: Node
         // DOM State
         var actions: [String: () -> Void] = [:]
         var elements: [String: HTMLElement]

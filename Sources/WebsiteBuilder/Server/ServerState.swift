@@ -32,19 +32,23 @@ actor ServerState {
             Might have to do a Node tree:while condition
             */
             // TODO find boxes to swap
-            printBlock(clientState.block)
+            print(oldBox?.value)
+            print(newBox?.value)
             clientState.swapBoxes()
             print(oldBox?.value)
             print(newBox?.value)
             if let a = clientState.actions[input] {
                 a()
             }
-            print(oldBox?.value)
-            print(newBox?.value)
             // TODO handle logic from input
             let data = try? JSONEncoder().encode(
                 ServerResult(html: clientState.drawBody(), javascript: serverJS)
             )
+            // Swap boxes back for next action
+            // This is a bottle neck but idk, gotta try something
+            clientState.swapBoxes()
+            print(oldBox?.value)
+            print(newBox?.value)
             if data != nil {
                 out = String(data: data!, encoding: .utf8)!
             } else {
@@ -54,7 +58,7 @@ actor ServerState {
         } else {
             // Create new state
             var state = createClientState(id)
-            printBlock(state.block)
+            state.block.printBlock()
             print("new connection \(id)")
             // TODO handle logic from input
             let data = try? JSONEncoder().encode(
@@ -86,30 +90,5 @@ actor ServerState {
             })
         }
         """
-    }
-}
-
-private func printBlock(_ block: some Block) {
-    let mirror = Mirror(reflecting: block)
-    for (label, value) in mirror.children {
-        let l = "\(label == nil ? "" : label!) : \(value)"
-        if var state = value as? any StateProperty {
-            var b = state.value as! any BoxProperty
-        }
-    }
-
-    if let base = block as? any BaseBlock {
-        switch base.type {
-        case .text:
-            let text = block as! Text
-        case .button:
-            let button = block as! Button
-        case .tuple:
-            let tuple = block as! TupleBlock
-            printBlock(tuple.value.acc)
-            printBlock(tuple.value.n)
-        }
-    } else {
-        printBlock(block.component)
     }
 }
