@@ -34,7 +34,7 @@ actor ServerState {
             // TODO find boxes to swap
             print(oldBox?.value)
             print(newBox?.value)
-            clientState.swapBoxes()
+            let prev = clientState.swapBoxes()
             print(oldBox?.value)
             print(newBox?.value)
             if let a = clientState.actions[input] {
@@ -46,7 +46,7 @@ actor ServerState {
             )
             // Swap boxes back for next action
             // This is a bottle neck but idk, gotta try something
-            clientState.swapBoxes()
+            clientState.restoreBoxes(prev)
             print(oldBox?.value)
             print(newBox?.value)
             if data != nil {

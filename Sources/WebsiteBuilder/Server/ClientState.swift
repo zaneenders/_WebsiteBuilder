@@ -1,6 +1,7 @@
 import Foundation
 
 extension ServerState {
+
     struct ClientState {
         let userID: String
         let block: any Block
@@ -35,8 +36,13 @@ extension ServerState {
             self.userID = id
         }
 
-        mutating func swapBoxes() {
+        mutating func restoreBoxes(_ prev: Node) {
+            self.block.restoreBoxes(rootNode)
+        }
+
+        mutating func swapBoxes() -> Node {
             self.block.swapBoxes(rootNode)
+            return Node("Prev Boxes")
         }
 
         mutating func drawBody() -> String {

@@ -1,4 +1,8 @@
 extension Block {
+
+    func restoreBoxes(_ node: Node) {
+        self.swapBoxes(node)
+    }
     /*
     I think I need to make this a method on Block and pass a node in that contains the Boxes
     that I will swap in
