@@ -15,7 +15,11 @@ protocol BoxProperty<T> {
 
 // still not sure how I wanna do my Box type
 
-final class Box<Value>: BoxProperty {
+final class Box<Value>: BoxProperty, CustomStringConvertible {
+
+    var description: String {
+        "{{ \(__value) }}"
+    }
 
     func clone() -> Box<Value> {
         // print("clone")

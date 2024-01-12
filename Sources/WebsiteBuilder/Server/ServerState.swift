@@ -32,11 +32,15 @@ actor ServerState {
             Might have to do a Node tree:while condition
             */
             // TODO find boxes to swap
-            print(oldBox?.value)
-            print(newBox?.value)
-            let prev = clientState.swapBoxes()
-            print(oldBox?.value)
-            print(newBox?.value)
+            // print(oldBox?.value)
+            // print(newBox?.value)
+            print("[[Swap]]")
+            print("before restore [[\(clientState.rootNode)]]")
+            clientState.restoreState()
+            print("after restore [[\(clientState.rootNode)]]")
+            //print(prev)
+            // print(oldBox?.value)
+            // print(newBox?.value)
             if let a = clientState.actions[input] {
                 a()
             }
@@ -46,9 +50,12 @@ actor ServerState {
             )
             // Swap boxes back for next action
             // This is a bottle neck but idk, gotta try something
-            clientState.restoreBoxes(prev)
-            print(oldBox?.value)
-            print(newBox?.value)
+            print("before swap [[\(clientState.rootNode)]]")
+            clientState.saveState()
+            print("after swap [[\(clientState.rootNode)]]")
+            print("[[Swap finish]]")
+            // print(oldBox?.value)
+            // print(newBox?.value)
             if data != nil {
                 out = String(data: data!, encoding: .utf8)!
             } else {

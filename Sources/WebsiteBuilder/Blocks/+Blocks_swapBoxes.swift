@@ -1,24 +1,16 @@
 extension Block {
 
-    func restoreBoxes(_ node: Node) {
-        self.swapBoxes(node)
-    }
-    /*
-    I think I need to make this a method on Block and pass a node in that contains the Boxes
-    that I will swap in
-
-    When do I create new Nodes vs use old ones?
-    How do I handle ordering?
-    */
-    func swapBoxes(_ node: Node) {
+    func restoreState(_ node: Node) {
         let mirror = Mirror(reflecting: self)
         for (label, value) in mirror.children {
             let l = "\(label == nil ? "" : label!) : \(value)"
             if var state = value as? any StateProperty {
                 var b = state.value as! any BoxProperty
                 if let name = label {
-                    print("Swapping [[\(self)]]")
-                    node.states[name] = b
+                    if let v = node.states[node.name + " : " + name] {
+                        state.value = v
+                        print("put back: \(state.value)")
+                    }
                 }
             }
         }
@@ -31,11 +23,46 @@ extension Block {
                 let _ = self as! Button
             case .tuple:
                 let tuple = self as! TupleBlock
-                tuple.value.acc.swapBoxes(Node("acc: \(self) -> TupleBlock"))
-                tuple.value.n.swapBoxes(Node("n: \(self) -> TupleBlock"))
+                tuple.value.acc.restoreState(Node("acc: \(self) -> TupleBlock"))
+                tuple.value.n.restoreState(Node("n: \(self) -> TupleBlock"))
             }
         } else {
-            self.component.swapBoxes(Node("\(self)"))
+            self.component.restoreState(Node("\(self)"))
+        }
+    }
+    /*
+    I think I need to make this a method on Block and pass a node in that contains the Boxes
+    that I will swap in
+
+    When do I create new Nodes vs use old ones?
+    How do I handle ordering?
+    */
+    func saveState(_ node: Node) {
+        let mirror = Mirror(reflecting: self)
+        for (label, value) in mirror.children {
+            let l = "\(label == nil ? "" : label!) : \(value)"
+            if var state = value as? any StateProperty {
+                var b = state.value as! any BoxProperty
+                if let name = label {
+                    node.states[node.name + " : " + name] = b
+                    print("pulled out \(node.states)")
+                }
+            }
+        }
+
+        if let base = self as? any BaseBlock {
+            switch base.type {
+            case .text:
+                let _ = self as! Text
+            case .button:
+                let _ = self as! Button
+            case .tuple:
+                let tuple = self as! TupleBlock
+                tuple.value.acc.saveState(Node("acc: \(self) -> TupleBlock"))
+                tuple.value.n.saveState(Node("n: \(self) -> TupleBlock"))
+            }
+        } else {
+            self.component.saveState(Node("\(self)"))
         }
     }
 

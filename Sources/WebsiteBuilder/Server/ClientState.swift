@@ -36,13 +36,12 @@ extension ServerState {
             self.userID = id
         }
 
-        mutating func restoreBoxes(_ prev: Node) {
-            self.block.restoreBoxes(rootNode)
+        mutating func restoreState() {
+            self.block.restoreState(rootNode)
         }
 
-        mutating func swapBoxes() -> Node {
-            self.block.swapBoxes(rootNode)
-            return Node("Prev Boxes")
+        mutating func saveState() {
+            self.block.saveState(rootNode)
         }
 
         mutating func drawBody() -> String {
