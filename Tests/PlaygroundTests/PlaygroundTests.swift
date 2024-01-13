@@ -1,84 +1,79 @@
 import XCTest
 
 @testable import WebsiteBuilder
+struct Test: Block {
+    @State var count: Int = 0
+    var component: some Block {
+        Button("\(count)"){
+            count += 1
+        }
+        if count.isMultiple(of: 2) {
+            Text("hello")
+        }
+        // else {
+        //     Text("idk")
+        // }
+    }
+}
+#warning("Test Nested State")
+// TODO test nested State
 
 final class PlaygroundTests: XCTestCase {
 
-    func testHomePage() async throws {
-        struct H: RootPage {
-            var contents: String {
-                "Home"
-            }
-
-            var subPages: [WebPage.Type] {
-                D.self
-                P.self
-            }
+    func testCopy() {
+        var t = Test()
+        let d = Node("default")
+        var tn = Node("t")
+        t.saveState(d)
+        t.saveState(tn)
+        var c = t
+        var cn = Node("c")
+        c.saveState(cn)
+        var tTup: TupleBlock {
+            t.component as! TupleBlock
         }
-
-        struct P: WebPage {
-            var contents: String {
-                D.url
-            }
-
-            var subPages: [WebPage.Type] {
-                J.self
-            }
+        var tb: Button {
+            tTup.value.acc as! Button
         }
-
-        struct D: WebPage {
-            var contents: String {
-                P.url
-            }
-
-            var subPages: [WebPage.Type] {
-                K.self
-            }
+        var cTup: TupleBlock {
+            c.component as! TupleBlock
         }
-
-        struct J: WebPage {
-            var contents: String {
-                links()
-            }
+        var cb: Button {
+            cTup.value.acc as! Button
         }
+        t.restoreState(tn)
+        print("tn: \(tn)")
+        print("t\(t)")
+        print("c\(c)")
+        tb.action()
+        print("t\(t)")
+        print("c\(c)")
+        t.saveState(tn)
+        print("tn: \(tn)")
+        print("cn: \(cn)")
+        c.restoreState(cn)
+        print("t\(t)")
+        print("c\(c)")
+        cb.action()
+        cb.action()
+        print("t\(t)")
+        print("c\(c)")
+        c.saveState(cn)
+        print("tn: \(tn)")
+        print("cn: \(cn)")
+        let a = t
+        let an = Node("an")
+        a.restoreState(d)
+        a.saveState(an)
+        print("tn: \(tn)")
+        print("cn: \(cn)")
+        print("an: \(an)")
 
-        struct K: WebPage {
-            var contents: String {
-                links()
-            }
-
-            var subPages: [WebPage.Type] {
-                V.self
-            }
-        }
-
-        struct V: WebPage {
-            var contents: String {
-                "V"
-            }
-        }
-
-        struct W: WebSite {
-            var root: RootPage = H()
-        }
-
-        func links() -> String {
-            H.url + P.url + D.url + J.url + K.url
-        }
-
-        W.setup()
-        XCTAssertEqual(H.url, "/")
-        XCTAssertEqual(P.url, "/P")
-        XCTAssertEqual(D.url, "/D")
-        XCTAssertEqual(K.url, "/D/K")
-        XCTAssertEqual(J.url, "/P/J")
-        XCTAssertEqual(V.url, "/D/K/V")
-        XCTAssertEqual(Routes.routes.count, 6)
-        XCTAssertEqual(Routes.pages[H.url]!.contents, "Home")
-        XCTAssertEqual(Routes.pages[P.url]!.contents, "/D")
-        XCTAssertEqual(Routes.pages[D.url]!.contents, "/P")
-        XCTAssertEqual(Routes.pages[K.url]!.contents, links())
-        XCTAssertEqual(Routes.pages[J.url]!.contents, links())
-        XCTAssertEqual(Routes.pages[V.url]!.contents, "V")
-    }
+        t.restoreState(tn)
+        t.printBlock()
+        c.restoreState(cn)
+        c.printBlock()
+        a.restoreState(an)
+        a.printBlock()
+    } 
 }

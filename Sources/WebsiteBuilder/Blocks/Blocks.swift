@@ -41,6 +41,33 @@ public enum BlockParser {
         return TupleBlock(value: (accumulated, next))
     }
 
+    public static func buildEither(first: some Block) -> ArrayBlock {
+        ArrayBlock(blocks: [first])
+    }
+
+    public static func buildEither(second: some Block) -> ArrayBlock {
+        ArrayBlock(blocks: [second])
+    }
+
+    public static func buildArray(_ components: [some Block]) -> ArrayBlock {
+        return ArrayBlock(blocks: components)
+    }
+
+    public static func buildOptional(_ component: (any Block)?) -> ArrayBlock
+    {
+        switch component {
+        case .none:
+            return ArrayBlock(blocks: [])
+        case .some(let b):
+            return ArrayBlock(blocks: [b])
+        }
+    }
+}
+
+
+public struct ArrayBlock: Block, BaseBlock {
+    let type: BlockType = .array
+    let blocks: [any Block]
 }
 
 struct Nothing: Block, BaseBlock {
@@ -50,6 +77,7 @@ struct Nothing: Block, BaseBlock {
 }
 
 enum BlockType {
+    case array
     case button
     case text
     case tuple
@@ -58,6 +86,7 @@ enum BlockType {
 protocol BaseBlock: Block {
     var type: BlockType { get }
 }
+
 extension BaseBlock {
     public var component: some Block {
         Nothing()

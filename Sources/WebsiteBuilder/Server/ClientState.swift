@@ -8,7 +8,7 @@ extension ServerState {
         let rootNode: Node
         // DOM State
         var actions: [String: () -> Void] = [:]
-        var elements: [String: HTMLElement]
+        var elements: [String: any HTMLElement]
         var order: [Int: String] = [:]
 
         init(_ id: String, _ root: some Block) {
@@ -17,13 +17,13 @@ extension ServerState {
             self.block = copy
             self.rootNode = Node("\(block)")
             var initHtml = ""
-            var pageComponents: [HTMLElement] = []
+            var pageComponents: [any HTMLElement] = []
             for (h, c) in page {
                 // c = inital page components
                 pageComponents += [c]
                 initHtml += h
             }
-            var e: [String: HTMLElement] = [:]
+            var e: [String: any HTMLElement] = [:]
             var o: [Int: String] = [:]
             for (i, el) in pageComponents.enumerated() {
                 o[i] = el.id
@@ -43,6 +43,10 @@ extension ServerState {
         mutating func saveState() {
             self.block.saveState(rootNode)
         }
+        
+        mutating func clone() -> Self {
+            return self.clone()
+        }
 
         mutating func drawBody() -> String {
             actions = [:]
@@ -59,6 +63,13 @@ extension ServerState {
             }
             if let base = block as? any BaseBlock {
                 switch base.type {
+                case .array:
+                    let array = block as! ArrayBlock
+                    var out = ""
+                    for a in array.blocks {
+                       out.append(draw(a)) 
+                    }
+                    return out
                 case .text:
                     let text = block as! Text
                     return div { text.text }
@@ -85,22 +96,14 @@ extension ServerState {
 }
 
 // a setup function
-private func setup(_ block: some Block) -> [(String, HTMLElement)] {
+private func setup(_ block: some Block) -> [(String, any HTMLElement)] {
     let mirror = Mirror(reflecting: block)
     for (label, value) in mirror.children {
         let l = "\(label == nil ? "" : label!)"
         // If there is a state property create a new box to swap out with the orignal
         if let state = value as? any StateProperty {
             let bp = state.value as! any BoxProperty
-            // TODO save box somewhere?
-            #warning("Start here!!!")
-            /*
-            TODO move to UserState
-            create a muating node tree to match the BlockGraph.
-            Store the boxes in that graph and use a similar dirty equal to invlaid nodes
-            Create new boxes as nessary
-            keep starting boxes at starting state
-            */
+
             oldBox = state.value as! Box<Int>
             print(
                 Unmanaged.passUnretained(state.value as! AnyObject).toOpaque())
@@ -114,6 +117,13 @@ private func setup(_ block: some Block) -> [(String, HTMLElement)] {
 
     if let base = block as? any BaseBlock {
         switch base.type {
+        case .array:
+            let array = block as! ArrayBlock
+            var collection:  [(String, any HTMLElement)] = []
+            for a in array.blocks {
+                collection += setup(a)
+            }
+            return collection
         case .text:
             let text = block as! Text
             let textDiv = textDiv(text)

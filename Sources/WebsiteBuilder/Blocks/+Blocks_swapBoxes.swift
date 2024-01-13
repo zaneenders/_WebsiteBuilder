@@ -8,8 +8,10 @@ extension Block {
                 var b = state.value as! any BoxProperty
                 if let name = label {
                     if let v = node.states[node.name + " : " + name] {
+                        let old = b.clone()
+                        print("old: \(old)")
+                        node.states[node.name + " : " + name]  = old
                         state.value = v
-                        print("put back: \(state.value)")
                     }
                 }
             }
@@ -17,6 +19,8 @@ extension Block {
 
         if let base = self as? any BaseBlock {
             switch base.type {
+            case .array:
+                let _ = self as! ArrayBlock
             case .text:
                 let _ = self as! Text
             case .button:
@@ -44,14 +48,17 @@ extension Block {
             if var state = value as? any StateProperty {
                 var b = state.value as! any BoxProperty
                 if let name = label {
+                    let c = b.clone()
+                    state.value = c
                     node.states[node.name + " : " + name] = b
-                    print("pulled out \(node.states)")
                 }
             }
         }
 
         if let base = self as? any BaseBlock {
             switch base.type {
+            case .array:
+                let _ = self as! ArrayBlock
             case .text:
                 let _ = self as! Text
             case .button:
@@ -78,6 +85,14 @@ extension Block {
 
         if let base = self as? any BaseBlock {
             switch base.type {
+            case .array:
+                let array = self as! ArrayBlock
+                print("ARRAY: ||")
+                for a in array.blocks {
+                    a.printBlock()    
+                }
+                print("||")
+                
             case .text:
                 let text = self as! Text
                 print("TEXT [[\(text.text)]]")
