@@ -14,6 +14,7 @@ let package = Package(
         ),
     ],
     dependencies: [
+        .package(name: "Scribe", path: "../Scribe"),
         .package(
             url: "https://github.com/apple/swift-nio.git",
             from: "2.0.0")
@@ -23,6 +24,7 @@ let package = Package(
         .target(
             name: "WebsiteBuilder",
             dependencies: [
+                "Scribe",
                 .product(name: "NIOCore", package: "swift-nio"),
                 .product(name: "NIOPosix", package: "swift-nio"),
                 .product(name: "NIOHTTP1", package: "swift-nio"),

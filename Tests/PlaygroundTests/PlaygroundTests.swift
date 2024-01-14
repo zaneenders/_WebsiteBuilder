@@ -80,7 +80,6 @@ final class PlaygroundTests: XCTestCase {
         c.restoreState(cn)
         cb.action()
         c.saveState(cn)
-        print(cn)
         c.restoreState(cn)
         cinnerbutton.action()
         c.saveState(cn)
