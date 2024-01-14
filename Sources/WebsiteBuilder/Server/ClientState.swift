@@ -43,7 +43,7 @@ extension ServerState {
         mutating func saveState() {
             self.block.saveState(rootNode)
         }
-        
+
         mutating func clone() -> Self {
             return self.clone()
         }
@@ -67,7 +67,7 @@ extension ServerState {
                     let array = block as! ArrayBlock
                     var out = ""
                     for a in array.blocks {
-                       out.append(draw(a)) 
+                        out.append(draw(a))
                     }
                     return out
                 case .text:
@@ -119,7 +119,7 @@ private func setup(_ block: some Block) -> [(String, any HTMLElement)] {
         switch base.type {
         case .array:
             let array = block as! ArrayBlock
-            var collection:  [(String, any HTMLElement)] = []
+            var collection: [(String, any HTMLElement)] = []
             for a in array.blocks {
                 collection += setup(a)
             }

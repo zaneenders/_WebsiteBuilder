@@ -1,18 +1,37 @@
 import XCTest
 
 @testable import WebsiteBuilder
-struct Test: Block {
+
+struct Test: Block, CustomStringConvertible {
     @State var count: Int = 0
     var component: some Block {
-        Button("\(count)"){
+        Button("\(count)") {
             count += 1
         }
         if count.isMultiple(of: 2) {
-            Text("hello")
+            NestedState()
         }
         // else {
         //     Text("idk")
         // }
+    }
+
+    var description: String {
+        "Test(\(count)):\(component)"
+    }
+}
+
+struct NestedState: Block, CustomStringConvertible {
+    @State var innerCount: Int = 0
+    var component: some Block {
+        Button("\(innerCount)") {
+            innerCount += 1
+            print("here \(innerCount)")
+        }
+    }
+
+    var description: String {
+        "Nested(\(innerCount)): \(component)"
     }
 }
 #warning("Test Nested State")
@@ -41,39 +60,49 @@ final class PlaygroundTests: XCTestCase {
         var cb: Button {
             cTup.value.acc as! Button
         }
-        t.restoreState(tn)
-        print("tn: \(tn)")
-        print("t\(t)")
-        print("c\(c)")
-        tb.action()
-        print("t\(t)")
-        print("c\(c)")
-        t.saveState(tn)
-        print("tn: \(tn)")
-        print("cn: \(cn)")
-        c.restoreState(cn)
-        print("t\(t)")
-        print("c\(c)")
-        cb.action()
-        cb.action()
-        print("t\(t)")
-        print("c\(c)")
-        c.saveState(cn)
-        print("tn: \(tn)")
-        print("cn: \(cn)")
-        let a = t
-        let an = Node("an")
-        a.restoreState(d)
-        a.saveState(an)
-        print("tn: \(tn)")
-        print("cn: \(cn)")
-        print("an: \(an)")
+        var carr: ArrayBlock {
+            cTup.value.n as! ArrayBlock
+        }
+        var cnested: NestedState {
+            carr.blocks[0] as! NestedState
+        }
+        var cinnerbutton: Button {
+            cnested.component as! Button
+        }
 
-        t.restoreState(tn)
-        t.printBlock()
+        // t.restoreState(tn)
+        // tb.action()
+        // t.saveState(tn)
+        //
         c.restoreState(cn)
-        c.printBlock()
-        a.restoreState(an)
-        a.printBlock()
-    } 
+        cb.action()
+        c.saveState(cn)
+        c.restoreState(cn)
+        cb.action()
+        c.saveState(cn)
+        print(cn)
+        c.restoreState(cn)
+        cinnerbutton.action()
+        c.saveState(cn)
+        // print(cn)
+        // c.printBlock()
+        //
+        // let a = t
+        // let an = Node("an")
+        // a.restoreState(d)
+        //
+        // a.saveState(an)
+        // print("t")
+        // t.restoreState(tn)
+        // //print(tn)
+        // t.printBlock()
+        // print("c")
+        // c.restoreState(cn)
+        // // print(cn)
+        // c.printBlock()
+        // print("a")
+        // a.restoreState(an)
+        // //print(an)
+        // a.printBlock()
+    }
 }

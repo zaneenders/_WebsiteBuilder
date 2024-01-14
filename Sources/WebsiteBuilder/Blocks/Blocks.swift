@@ -3,7 +3,7 @@ public protocol Block {
     @BlockParser var component: Component { get }
 }
 
-public struct Button: Block, BaseBlock {
+public struct Button: Block, BaseBlock, CustomStringConvertible {
     let type: BlockType = .button
     let label: String
     let action: () -> Void
@@ -11,6 +11,10 @@ public struct Button: Block, BaseBlock {
     public init(_ label: String, _ action: @escaping () -> Void) {
         self.label = label
         self.action = action
+    }
+
+    public var description: String {
+        "BUTTON:[[\(label)]]"
     }
 }
 
@@ -53,8 +57,7 @@ public enum BlockParser {
         return ArrayBlock(blocks: components)
     }
 
-    public static func buildOptional(_ component: (any Block)?) -> ArrayBlock
-    {
+    public static func buildOptional(_ component: (any Block)?) -> ArrayBlock {
         switch component {
         case .none:
             return ArrayBlock(blocks: [])
@@ -64,10 +67,13 @@ public enum BlockParser {
     }
 }
 
-
-public struct ArrayBlock: Block, BaseBlock {
+public struct ArrayBlock: Block, BaseBlock, CustomStringConvertible {
     let type: BlockType = .array
     let blocks: [any Block]
+
+    public var description: String {
+        "ARRAY[\(blocks)]"
+    }
 }
 
 struct Nothing: Block, BaseBlock {
@@ -93,7 +99,11 @@ extension BaseBlock {
     }
 }
 
-struct TupleBlock: Block, BaseBlock {
+struct TupleBlock: Block, BaseBlock, CustomStringConvertible {
     let value: (acc: any Block, n: any Block)
     let type: BlockType = .tuple
+
+    var description: String {
+        "\(value.acc), \(value.n)"
+    }
 }

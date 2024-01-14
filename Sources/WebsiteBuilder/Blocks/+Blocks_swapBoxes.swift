@@ -8,9 +8,8 @@ extension Block {
                 var b = state.value as! any BoxProperty
                 if let name = label {
                     if let v = node.states[node.name + " : " + name] {
-                        let old = b.clone()
-                        print("old: \(old)")
-                        node.states[node.name + " : " + name]  = old
+                        node.states.removeValue(
+                            forKey: node.name + " : " + name)
                         state.value = v
                     }
                 }
@@ -27,11 +26,16 @@ extension Block {
                 let _ = self as! Button
             case .tuple:
                 let tuple = self as! TupleBlock
-                tuple.value.acc.restoreState(Node("acc: \(self) -> TupleBlock"))
-                tuple.value.n.restoreState(Node("n: \(self) -> TupleBlock"))
+                let first = Node("acc: \(self) -> TupleBlock")
+                tuple.value.acc.restoreState(first)
+                let secound = Node("n: \(self) -> TupleBlock")
+                tuple.value.n.restoreState(secound)
+                node.children = [first, secound]
             }
         } else {
-            self.component.restoreState(Node("\(self)"))
+            let child = Node("\(self)")
+            self.component.restoreState(child)
+            node.children = [child]
         }
     }
     /*
@@ -89,10 +93,10 @@ extension Block {
                 let array = self as! ArrayBlock
                 print("ARRAY: ||")
                 for a in array.blocks {
-                    a.printBlock()    
+                    a.printBlock()
                 }
                 print("||")
-                
+
             case .text:
                 let text = self as! Text
                 print("TEXT [[\(text.text)]]")
